@@ -61,11 +61,8 @@ defmodule RobotSimulator do
     %{robot | direction: new_direction}
   end
 
-  @doc """
-  Makes the Robot turn right.
-  """
   @spec turn_right(robot :: %Robot{}) :: %Robot{}
-  def turn_right(robot) do
+  defp turn_right(robot) do
     {_, new_direction} =
       Enum.find(@direction_map, fn {direction, _} ->
         direction == robot.direction
@@ -74,11 +71,8 @@ defmodule RobotSimulator do
     %{robot | direction: new_direction}
   end
 
-  @doc """
-  Makes the Robot advance one position
-  """
   @spec advance(robot :: %Robot{}) :: %Robot{}
-  def advance(robot) do
+  defp advance(robot) do
     {x, y} = robot.position
 
     new_position =
