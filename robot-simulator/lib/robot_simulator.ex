@@ -40,12 +40,12 @@ defmodule RobotSimulator do
     }
   end
 
-  def create(direction, _) when direction do
-    {:error, "invalid direction"}
-  end
-
-  def create(_, _) do
-    {:error, "invalid position"}
+  def create(direction, _) do
+    if Enum.member?(@directions, direction) do
+      {:error, "invalid position"}
+    else
+      {:error, "invalid direction"}
+    end
   end
 
   @doc """
