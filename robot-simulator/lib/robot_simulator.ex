@@ -5,16 +5,6 @@ defmodule RobotSimulator do
           | :south
           | :west
 
-  @type coordinates :: %{
-          x: integer,
-          y: integer
-        }
-
-  @type robot :: %{
-          direction: direction,
-          position: coordinates
-        }
-
   @directions [:north, :east, :south, :west]
 
   @direction_map [
@@ -24,23 +14,34 @@ defmodule RobotSimulator do
     {:west, :north}
   ]
 
-  @doc """
-  Create a Robot Simulator given an initial direction and position.
-
-  Valid directions are: `:north`, `:east`, `:south`, `:west`
+  @moduledoc """
+  Defines the Robot struct.
+  Its direction consists of a `direction` type and its position is a `{x, y}` tuple.
   """
-  @spec create(direction :: atom, position :: {integer, integer}) :: robot
-  def create(direction \\ :north, coordinates \\ {0, 0})
-
-  def create(direction, _) when direction not in @directions do
-    {:error, "invalid direction"}
+  defmodule Robot do
+    defstruct direction: :north, position: {0, 0}
   end
 
-  def create(direction, {x, y}) when is_integer(x) and is_integer(y) do
-    %{
+  @doc """
+  Create a Robot Simulator given an initial direction and position.
+  Valid directions are: `:north`, `:east`, `:south`, `:west`
+  """
+  @spec create() :: %Robot{}
+  def create, do: %Robot{}
+
+  @spec create(direction :: direction, position :: {integer, integer}) ::
+          %Robot{} | {:error, String.t()}
+
+  def create(direction, {x, y})
+      when is_integer(x) and is_integer(y) and direction in @directions do
+    %Robot{
       direction: direction,
-      position: %{x: x, y: y}
+      position: {x, y}
     }
+  end
+
+  def create(direction, _) when direction do
+    {:error, "invalid direction"}
   end
 
   def create(_, _) do
@@ -50,11 +51,11 @@ defmodule RobotSimulator do
   @doc """
   Makes the Robot turn left.
   """
-  @spec turn_left(robot :: robot) :: robot
+  @spec turn_left(robot :: %Robot{}) :: %Robot{}
   def turn_left(robot) do
     {new_direction, _} =
       Enum.find(@direction_map, fn {_, direction} ->
-        direction == robot[:direction]
+        direction == robot.direction
       end)
 
     %{robot | direction: new_direction}
@@ -63,11 +64,11 @@ defmodule RobotSimulator do
   @doc """
   Makes the Robot turn right.
   """
-  @spec turn_right(robot :: robot) :: robot
+  @spec turn_right(robot :: %Robot{}) :: %Robot{}
   def turn_right(robot) do
     {_, new_direction} =
       Enum.find(@direction_map, fn {direction, _} ->
-        direction == robot[:direction]
+        direction == robot.direction
       end)
 
     %{robot | direction: new_direction}
@@ -76,23 +77,23 @@ defmodule RobotSimulator do
   @doc """
   Makes the Robot advance one position
   """
-  @spec advance(robot :: robot) :: robot
+  @spec advance(robot :: %Robot{}) :: %Robot{}
   def advance(robot) do
-    %{:x => x, :y => y} = robot[:position]
+    {x, y} = robot.position
 
     new_position =
-      case robot[:direction] do
+      case robot.direction do
         :north ->
-          %{x: x, y: y + 1}
+          {x, y + 1}
 
         :east ->
-          %{x: x + 1, y: y}
+          {x + 1, y}
 
         :south ->
-          %{x: x, y: y - 1}
+          {x, y - 1}
 
         :west ->
-          %{x: x - 1, y: y}
+          {x - 1, y}
       end
 
     %{robot | position: new_position}
@@ -103,7 +104,7 @@ defmodule RobotSimulator do
 
   Valid instructions are: "R" (turn right), "L", (turn left), and "A" (advance)
   """
-  @spec simulate(robot :: robot, instructions :: String.t()) :: any
+  @spec simulate(robot :: %Robot{}, instructions :: String.t()) :: any
   def simulate(robot, instructions) do
     if String.match?(instructions, ~r/(?![ARL])./) do
       {:error, "invalid instruction"}
@@ -123,17 +124,16 @@ defmodule RobotSimulator do
 
   Valid directions are: `:north`, `:east`, `:south`, `:west`
   """
-  @spec direction(robot :: robot) :: atom
+  @spec direction(robot :: %Robot{}) :: direction
   def direction(robot) do
-    robot[:direction]
+    robot.direction
   end
 
   @doc """
   Return the robot's position.
   """
-  @spec position(robot :: robot) :: {integer, integer}
+  @spec position(robot :: %Robot{}) :: {integer, integer}
   def position(robot) do
-    %{:x => x, :y => y} = robot[:position]
-    {x, y}
+    robot.position
   end
 end
