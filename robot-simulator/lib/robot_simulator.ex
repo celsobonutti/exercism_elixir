@@ -22,6 +22,10 @@ defmodule RobotSimulator do
     defstruct direction: :north, position: {0, 0}
   end
 
+  defguardp is_position(x, y) when is_integer(x) and is_integer(y)
+
+  defguardp is_direction(direction) when direction in @directions
+
   @doc """
   Create a Robot Simulator given an initial direction and position.
   Valid directions are: `:north`, `:east`, `:south`, `:west`
@@ -33,7 +37,7 @@ defmodule RobotSimulator do
           %Robot{} | {:error, String.t()}
 
   def create(direction, {x, y})
-      when is_integer(x) and is_integer(y) and direction in @directions do
+      when is_position(x, y) and is_direction(direction) do
     %Robot{
       direction: direction,
       position: {x, y}
@@ -48,11 +52,8 @@ defmodule RobotSimulator do
     end
   end
 
-  @doc """
-  Makes the Robot turn left.
-  """
   @spec turn_left(robot :: %Robot{}) :: %Robot{}
-  def turn_left(robot) do
+  defp turn_left(robot) do
     {new_direction, _} =
       Enum.find(@direction_map, fn {_, direction} ->
         direction == robot.direction
@@ -119,15 +120,11 @@ defmodule RobotSimulator do
   Valid directions are: `:north`, `:east`, `:south`, `:west`
   """
   @spec direction(robot :: %Robot{}) :: direction
-  def direction(robot) do
-    robot.direction
-  end
+  def direction(%{direction: dir}), do: dir
 
   @doc """
   Return the robot's position.
   """
   @spec position(robot :: %Robot{}) :: {integer, integer}
-  def position(robot) do
-    robot.position
-  end
+  def position(%{position: pos}), do: pos
 end
